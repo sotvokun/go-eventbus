@@ -61,12 +61,13 @@ func (server *Server) EventBus() eventbus.Bus {
 }
 
 func (server *Server) rpcCallback(subscribeArg *SubscribeArg) func(args ...interface{}) {
+	// TODO: Do not know how to handle this error, because it is inside a callback
 	return func(args ...interface{}) {
 		client, connErr := rpc.DialHTTPPath("tcp", subscribeArg.ClientAddr, subscribeArg.ClientPath)
-		defer client.Close()
 		if connErr != nil {
 			fmt.Errorf("dialing: %v", connErr)
 		}
+		defer client.Close()
 		clientArg := new(ClientArg)
 		clientArg.Topic = subscribeArg.Topic
 		clientArg.Args = args
@@ -100,8 +101,7 @@ func (server *Server) Start() error {
 		rpcServer.HandleHTTP(server.path, "/debug"+server.path)
 		l, e := net.Listen("tcp", server.address)
 		if e != nil {
-			err = e
-			fmt.Errorf("listen error: %v", e)
+			err = fmt.Errorf("listen error: %v", e)
 		}
 		service.started = true
 		service.wg.Add(1)

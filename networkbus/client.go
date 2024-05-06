@@ -45,7 +45,7 @@ func (client *Client) EventBus() eventbus.Bus {
 	return client.eventBus
 }
 
-func (client *Client) doSubscribe(topic string, fn interface{}, serverAddr, serverPath string, subscribeType SubscribeType) {
+func (client *Client) doSubscribe(topic string, fn interface{}, serverAddr, serverPath string, subscribeType SubscribeType) error {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Server not found -", r)
@@ -53,19 +53,21 @@ func (client *Client) doSubscribe(topic string, fn interface{}, serverAddr, serv
 	}()
 
 	rpcClient, err := rpc.DialHTTPPath("tcp", serverAddr, serverPath)
-	defer rpcClient.Close()
 	if err != nil {
-		fmt.Errorf("dialing: %v", err)
+		return fmt.Errorf("dialing: %v", err)
 	}
+	defer rpcClient.Close()
 	args := &SubscribeArg{client.address, client.path, PublishService, subscribeType, topic}
 	reply := new(bool)
 	err = rpcClient.Call(RegisterService, args, reply)
 	if err != nil {
-		fmt.Errorf("Register error: %v", err)
+		return fmt.Errorf("Register error: %v", err)
 	}
 	if *reply {
 		client.eventBus.Subscribe(topic, fn)
 	}
+
+	return nil
 }
 
 // Subscribe subscribes to a topic in a remote event bus

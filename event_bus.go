@@ -141,7 +141,7 @@ func (bus *EventBus) Publish(topic string, args ...interface{}) {
 				bus.removeHandler(topic, i)
 			}
 			if !handler.async {
-				bus.doPublish(handler, topic, args...)
+				bus.doPublish(handler, args...)
 			} else {
 				bus.wg.Add(1)
 				if handler.transactional {
@@ -149,23 +149,23 @@ func (bus *EventBus) Publish(topic string, args ...interface{}) {
 					handler.Lock()
 					bus.lock.Lock()
 				}
-				go bus.doPublishAsync(handler, topic, args...)
+				go bus.doPublishAsync(handler, args...)
 			}
 		}
 	}
 }
 
-func (bus *EventBus) doPublish(handler *eventHandler, topic string, args ...interface{}) {
+func (bus *EventBus) doPublish(handler *eventHandler, args ...interface{}) {
 	passedArguments := bus.setUpPublish(handler, args...)
 	handler.callBack.Call(passedArguments)
 }
 
-func (bus *EventBus) doPublishAsync(handler *eventHandler, topic string, args ...interface{}) {
+func (bus *EventBus) doPublishAsync(handler *eventHandler, args ...interface{}) {
 	defer bus.wg.Done()
 	if handler.transactional {
 		defer handler.Unlock()
 	}
-	bus.doPublish(handler, topic, args...)
+	bus.doPublish(handler, args...)
 }
 
 func (bus *EventBus) removeHandler(topic string, idx int) {

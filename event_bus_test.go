@@ -173,7 +173,7 @@ func TestSubscribeAsync(t *testing.T) {
 	numResults := 0
 
 	go func() {
-		for _ = range results {
+		for range results {
 			numResults++
 		}
 	}()
