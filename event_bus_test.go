@@ -1,4 +1,4 @@
-package EventBus
+package eventbus
 
 import (
 	"testing"

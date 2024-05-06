@@ -1,11 +1,13 @@
-package EventBus
+package networkbus
 
 import (
 	"testing"
+
+	"github.com/sotvokun/go-eventbus"
 )
 
 func TestNewServer(t *testing.T) {
-	serverBus := NewServer(":2010", "/_server_bus_", New())
+	serverBus := NewServer(":2010", "/_server_bus_", eventbus.New())
 	serverBus.Start()
 	if serverBus == nil || !serverBus.service.started {
 		t.Log("New server EventBus not created!")
@@ -15,7 +17,7 @@ func TestNewServer(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	clientBus := NewClient(":2015", "/_client_bus_", New())
+	clientBus := NewClient(":2015", "/_client_bus_", eventbus.New())
 	clientBus.Start()
 	if clientBus == nil || !clientBus.service.started {
 		t.Log("New client EventBus not created!")
@@ -26,7 +28,7 @@ func TestNewClient(t *testing.T) {
 
 func TestRegister(t *testing.T) {
 	serverPath := "/_server_bus_"
-	serverBus := NewServer(":2010", serverPath, New())
+	serverBus := NewServer(":2010", serverPath, eventbus.New())
 
 	args := &SubscribeArg{serverBus.address, serverPath, PublishService, Subscribe, "topic"}
 	reply := new(bool)
@@ -42,7 +44,7 @@ func TestRegister(t *testing.T) {
 }
 
 func TestPushEvent(t *testing.T) {
-	clientBus := NewClient("localhost:2015", "/_client_bus_", New())
+	clientBus := NewClient("localhost:2015", "/_client_bus_", eventbus.New())
 
 	eventArgs := make([]interface{}, 1)
 	eventArgs[0] = 10
@@ -64,7 +66,7 @@ func TestPushEvent(t *testing.T) {
 }
 
 func TestServerPublish(t *testing.T) {
-	serverBus := NewServer(":2020", "/_server_bus_b", New())
+	serverBus := NewServer(":2020", "/_server_bus_b", eventbus.New())
 	serverBus.Start()
 
 	fn := func(a int) {
@@ -73,7 +75,7 @@ func TestServerPublish(t *testing.T) {
 		}
 	}
 
-	clientBus := NewClient(":2025", "/_client_bus_b", New())
+	clientBus := NewClient(":2025", "/_client_bus_b", eventbus.New())
 	clientBus.Start()
 
 	clientBus.Subscribe("topic", fn, ":2010", "/_server_bus_b")

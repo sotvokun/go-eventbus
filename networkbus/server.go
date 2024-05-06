@@ -1,4 +1,4 @@
-package EventBus
+package networkbus
 
 import (
 	"errors"
@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/rpc"
 	"sync"
+
+	"github.com/sotvokun/go-eventbus"
 )
 
 // SubscribeType - how the client intends to subscribe
@@ -35,7 +37,7 @@ type SubscribeArg struct {
 
 // Server - object capable of being subscribed to by remote handlers
 type Server struct {
-	eventBus    Bus
+	eventBus    eventbus.Bus
 	address     string
 	path        string
 	subscribers map[string][]*SubscribeArg
@@ -43,7 +45,7 @@ type Server struct {
 }
 
 // NewServer - create a new Server at the address and path
-func NewServer(address, path string, eventBus Bus) *Server {
+func NewServer(address, path string, eventBus eventbus.Bus) *Server {
 	server := new(Server)
 	server.eventBus = eventBus
 	server.address = address
@@ -54,7 +56,7 @@ func NewServer(address, path string, eventBus Bus) *Server {
 }
 
 // EventBus - returns wrapped event bus
-func (server *Server) EventBus() Bus {
+func (server *Server) EventBus() eventbus.Bus {
 	return server.eventBus
 }
 

@@ -1,4 +1,4 @@
-package EventBus
+package networkbus
 
 import (
 	"errors"
@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/rpc"
 	"sync"
+
+	"github.com/sotvokun/go-eventbus"
 )
 
 // NetworkBus - object capable of subscribing to remote event buses in addition to remote event
@@ -15,7 +17,7 @@ type NetworkBus struct {
 	*Client
 	*Server
 	service   *NetworkBusService
-	sharedBus Bus
+	sharedBus eventbus.Bus
 	address   string
 	path      string
 }
@@ -23,7 +25,7 @@ type NetworkBus struct {
 // NewNetworkBus - returns a new network bus object at the server address and path
 func NewNetworkBus(address, path string) *NetworkBus {
 	bus := new(NetworkBus)
-	bus.sharedBus = New()
+	bus.sharedBus = eventbus.New()
 	bus.Server = NewServer(address, path, bus.sharedBus)
 	bus.Client = NewClient(address, path, bus.sharedBus)
 	bus.service = &NetworkBusService{&sync.WaitGroup{}, false}
@@ -33,7 +35,7 @@ func NewNetworkBus(address, path string) *NetworkBus {
 }
 
 // EventBus - returns wrapped event bus
-func (networkBus *NetworkBus) EventBus() Bus {
+func (networkBus *NetworkBus) EventBus() eventbus.Bus {
 	return networkBus.sharedBus
 }
 

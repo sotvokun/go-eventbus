@@ -1,4 +1,4 @@
-package EventBus
+package networkbus
 
 import (
 	"errors"
@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/rpc"
 	"sync"
+
+	"github.com/sotvokun/go-eventbus"
 )
 
 const (
@@ -22,14 +24,14 @@ type ClientArg struct {
 
 // Client - object capable of subscribing to a remote event bus
 type Client struct {
-	eventBus Bus
+	eventBus eventbus.Bus
 	address  string
 	path     string
 	service  *ClientService
 }
 
 // NewClient - create a client object with the address and server path
-func NewClient(address, path string, eventBus Bus) *Client {
+func NewClient(address, path string, eventBus eventbus.Bus) *Client {
 	client := new(Client)
 	client.eventBus = eventBus
 	client.address = address
@@ -39,7 +41,7 @@ func NewClient(address, path string, eventBus Bus) *Client {
 }
 
 // EventBus - returns the underlying event bus
-func (client *Client) EventBus() Bus {
+func (client *Client) EventBus() eventbus.Bus {
 	return client.eventBus
 }
 
