@@ -66,12 +66,12 @@ func (client *Client) doSubscribe(topic string, fn interface{}, serverAddr, serv
 	}
 }
 
-//Subscribe subscribes to a topic in a remote event bus
+// Subscribe subscribes to a topic in a remote event bus
 func (client *Client) Subscribe(topic string, fn interface{}, serverAddr, serverPath string) {
 	client.doSubscribe(topic, fn, serverAddr, serverPath, Subscribe)
 }
 
-//SubscribeOnce subscribes once to a topic in a remote event bus
+// SubscribeOnce subscribes once to a topic in a remote event bus
 func (client *Client) SubscribeOnce(topic string, fn interface{}, serverAddr, serverPath string) {
 	client.doSubscribe(topic, fn, serverAddr, serverPath, SubscribeOnce)
 }
@@ -88,8 +88,8 @@ func (client *Client) Start() error {
 		if err == nil {
 			service.wg.Add(1)
 			service.started = true
-			go http.Serve(l, nil)	
-		}	
+			go http.Serve(l, nil)
+		}
 	} else {
 		err = errors.New("Client service already started")
 	}
