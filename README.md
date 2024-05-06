@@ -1,27 +1,25 @@
 EventBus
 ======
 
-[![GoDoc](https://godoc.org/github.com/asaskevich/EventBus?status.svg)](https://godoc.org/github.com/asaskevich/EventBus) [![Coverage Status](https://img.shields.io/coveralls/asaskevich/EventBus.svg)](https://coveralls.io/r/asaskevich/EventBus?branch=master) [![Build Status](https://travis-ci.org/asaskevich/EventBus.svg)](https://travis-ci.org/asaskevich/EventBus)
-
-Package EventBus is the little and lightweight eventbus with async compatibility for GoLang.
+Package go-eventbus is the little and lightweight eventbus with async compatibility for GoLang.
 
 #### Installation
 Make sure that Go is installed on your computer.
 Type the following command in your terminal:
 
-	go get github.com/asaskevich/EventBus
+	go get github.com/sotvokun/go-eventbus
 
 After it the package is ready to use.
 
 #### Import package in your project
 Add following line in your `*.go` file:
 ```go
-import "github.com/asaskevich/EventBus"
+import "github.com/sotvokun/go-eventbus"
 ```
-If you unhappy to use long `EventBus`, you can do something like this:
+If you unhappy to use long `eventbus`, you can do something like this:
 ```go
 import (
-	evbus "github.com/asaskevich/EventBus"
+	evbus "github.com/sotvokun/go-eventbus"
 )
 ```
 
@@ -32,7 +30,7 @@ func calculator(a int, b int) {
 }
 
 func main() {
-	bus := EventBus.New();
+	bus := eventbus.New();
 	bus.Subscribe("main:calculator", calculator);
 	bus.Publish("main:calculator", 20, 40);
 	bus.Unsubscribe("main:calculator", calculator);
@@ -53,7 +51,7 @@ func main() {
 #### New()
 New returns new EventBus with empty handlers.
 ```go
-bus := EventBus.New();
+bus := eventbus.New();
 ```
 
 #### Subscribe(topic string, fn interface{}) error
@@ -99,7 +97,7 @@ func slowCalculator(a, b int) {
 	fmt.Printf("%d\n", a + b)
 }
 
-bus := EventBus.New()
+bus := eventbus.New()
 bus.SubscribeAsync("main:slow_calculator", slowCalculator, false)
 
 bus.Publish("main:slow_calculator", 20, 60)
