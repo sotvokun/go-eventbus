@@ -13,6 +13,7 @@ type BusSubscriber interface {
 	SubscribeOnce(topic string, fn interface{}) error
 	SubscribeOnceAsync(topic string, fn interface{}) error
 	Unsubscribe(topic string, handler interface{}) error
+	SetArgumentProcessor(topic string, argProc ArgumentProcessor)
 }
 
 // BusPublisher defines publishing-related bus behavior
@@ -33,11 +34,14 @@ type Bus interface {
 	BusPublisher
 }
 
+type ArgumentProcessor func(callback *eventHandler, arg ...interface{}) []reflect.Value
+
 // EventBus - box for handlers and callbacks.
 type EventBus struct {
 	handlers map[string][]*eventHandler
-	lock     sync.Mutex // a lock for the map
 	wg       sync.WaitGroup
+	lock     sync.Mutex // a lock for the map
+	argProcs map[string]ArgumentProcessor
 }
 
 type eventHandler struct {
@@ -52,8 +56,9 @@ type eventHandler struct {
 func New() Bus {
 	b := &EventBus{
 		make(map[string][]*eventHandler),
-		sync.Mutex{},
 		sync.WaitGroup{},
+		sync.Mutex{},
+		make(map[string]ArgumentProcessor),
 	}
 	return Bus(b)
 }
@@ -150,7 +155,11 @@ func (bus *EventBus) Publish(topic string, args ...interface{}) {
 }
 
 func (bus *EventBus) doPublish(handler *eventHandler, topic string, args ...interface{}) {
-	passedArguments := bus.setUpPublish(handler, args...)
+	argProc, ok := bus.argProcs[topic]
+	if !ok {
+		argProc = bus.setupArguments
+	}
+	passedArguments := argProc(handler, args...)
 	if handler.once == nil {
 		handler.callBack.Call(passedArguments)
 	} else {
@@ -204,7 +213,7 @@ func (bus *EventBus) findHandlerIdx(topic string, callback reflect.Value) int {
 	return -1
 }
 
-func (bus *EventBus) setUpPublish(callback *eventHandler, args ...interface{}) []reflect.Value {
+func (bus *EventBus) setupArguments(callback *eventHandler, args ...interface{}) []reflect.Value {
 	funcType := callback.callBack.Type()
 	passedArguments := make([]reflect.Value, len(args))
 	for i, v := range args {
@@ -221,4 +230,13 @@ func (bus *EventBus) setUpPublish(callback *eventHandler, args ...interface{}) [
 // WaitAsync waits for all async callbacks to complete
 func (bus *EventBus) WaitAsync() {
 	bus.wg.Wait()
+}
+
+// SetArgumentProcessor sets the argument processor for a topic
+//
+// The argument processor is useful for customizing how arguments are passed
+// to the subscriber's callback. The default argument processor simply passes
+// the arguments as is.
+func (bus *EventBus) SetArgumentProcessor(topic string, argProc ArgumentProcessor) {
+	bus.argProcs[topic] = argProc
 }

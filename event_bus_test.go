@@ -1,6 +1,7 @@
 package eventbus
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
@@ -187,4 +188,44 @@ func TestSubscribeAsync(t *testing.T) {
 	//if numResults != 2 {
 	//	t.Fail()
 	//}
+}
+
+func TestSetArgumentProcessor(t *testing.T) {
+	t.Run("Publish with ArgumentProcessor", func(t *testing.T) {
+		bus := New()
+		bus.SetArgumentProcessor("topic", func(callback *eventHandler, arg ...interface{}) []reflect.Value {
+			result := make([]reflect.Value, 0)
+			sum := 0
+			for _, v := range arg {
+				if reflect.TypeOf(v).Kind() == reflect.Int {
+					sum += v.(int)
+				}
+			}
+			result = append(result, reflect.ValueOf(sum))
+			return result
+		})
+		bus.Subscribe("topic", func(sum int) {
+			if sum != 3 {
+				t.Fail()
+			}
+		})
+		bus.Publish("topic", 1, 2)
+	})
+
+	t.Run("Publish without ArgumentProcessor", func(t *testing.T) {
+		// If no argument processor is set, the default argument processor
+		// will not change the arguments passed to the subscriber's callback.
+		//
+		// In this test, the subscriber's callback expects an int argument,
+		// but the arguments passed to the Publish method are two int values.
+		// The subscriber's callback will panic because it expects only one argument.
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fail()
+			}
+		}()
+		bus := New()
+		bus.Subscribe("topic", func(sum int) {})
+		bus.Publish("topic", 1, 2)
+	})
 }
