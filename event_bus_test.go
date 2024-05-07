@@ -229,3 +229,24 @@ func TestSetArgumentProcessor(t *testing.T) {
 		bus.Publish("topic", 1, 2)
 	})
 }
+
+func TestSetDefaultArgumentProcessor(t *testing.T) {
+	bus := New()
+	bus.SetDefaultArgumentProcessor(func(callback *eventHandler, arg ...interface{}) []reflect.Value {
+		result := make([]reflect.Value, 0)
+		sum := 0
+		for _, v := range arg {
+			if reflect.TypeOf(v).Kind() == reflect.Int {
+				sum += v.(int)
+			}
+		}
+		result = append(result, reflect.ValueOf(sum))
+		return result
+	})
+	bus.Subscribe("topic", func(sum int) {
+		if sum != 3 {
+			t.Fail()
+		}
+	})
+	bus.Publish("topic", 1, 2)
+}

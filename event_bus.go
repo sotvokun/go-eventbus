@@ -14,6 +14,7 @@ type BusSubscriber interface {
 	SubscribeOnceAsync(topic string, fn interface{}) error
 	Unsubscribe(topic string, handler interface{}) error
 	SetArgumentProcessor(topic string, argProc ArgumentProcessor)
+	SetDefaultArgumentProcessor(argProc ...ArgumentProcessor)
 }
 
 // BusPublisher defines publishing-related bus behavior
@@ -38,10 +39,11 @@ type ArgumentProcessor func(callback *eventHandler, arg ...interface{}) []reflec
 
 // EventBus - box for handlers and callbacks.
 type EventBus struct {
-	handlers map[string][]*eventHandler
-	wg       sync.WaitGroup
-	lock     sync.Mutex // a lock for the map
-	argProcs map[string]ArgumentProcessor
+	handlers       map[string][]*eventHandler
+	wg             sync.WaitGroup
+	lock           sync.Mutex // a lock for the map
+	argProcs       map[string]ArgumentProcessor
+	defaultArgProc ArgumentProcessor
 }
 
 type eventHandler struct {
@@ -59,7 +61,9 @@ func New() Bus {
 		sync.WaitGroup{},
 		sync.Mutex{},
 		make(map[string]ArgumentProcessor),
+		nil,
 	}
+	b.SetDefaultArgumentProcessor()
 	return Bus(b)
 }
 
@@ -157,7 +161,7 @@ func (bus *EventBus) Publish(topic string, args ...interface{}) {
 func (bus *EventBus) doPublish(handler *eventHandler, topic string, args ...interface{}) {
 	argProc, ok := bus.argProcs[topic]
 	if !ok {
-		argProc = bus.setupArguments
+		argProc = bus.defaultArgProc
 	}
 	passedArguments := argProc(handler, args...)
 	if handler.once == nil {
@@ -235,8 +239,20 @@ func (bus *EventBus) WaitAsync() {
 // SetArgumentProcessor sets the argument processor for a topic
 //
 // The argument processor is useful for customizing how arguments are passed
-// to the subscriber's callback. The default argument processor simply passes
-// the arguments as is.
+// to the subscriber's callback. The default argument processor will be used
+// if no argument processor is set for a topic.
 func (bus *EventBus) SetArgumentProcessor(topic string, argProc ArgumentProcessor) {
 	bus.argProcs[topic] = argProc
+}
+
+// SetDefaultArgumentProcessor sets the default argument processor
+//
+// Pass no arguments to reset the default argument processor to the built-in
+// default argument processor.
+func (bus *EventBus) SetDefaultArgumentProcessor(argProc ...ArgumentProcessor) {
+	if len(argProc) > 0 {
+		bus.defaultArgProc = argProc[0]
+	} else {
+		bus.defaultArgProc = bus.setupArguments
+	}
 }
