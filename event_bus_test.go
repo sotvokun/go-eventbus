@@ -193,7 +193,7 @@ func TestSubscribeAsync(t *testing.T) {
 func TestSetArgumentProcessor(t *testing.T) {
 	t.Run("Publish with ArgumentProcessor", func(t *testing.T) {
 		bus := New()
-		bus.SetArgumentProcessor("topic", func(callback *eventHandler, arg ...interface{}) []reflect.Value {
+		bus.SetArgumentProcessor("topic", func(callback *EventHandler, arg ...interface{}) []reflect.Value {
 			result := make([]reflect.Value, 0)
 			sum := 0
 			for _, v := range arg {
@@ -232,7 +232,7 @@ func TestSetArgumentProcessor(t *testing.T) {
 
 func TestSetDefaultArgumentProcessor(t *testing.T) {
 	bus := New()
-	bus.SetDefaultArgumentProcessor(func(callback *eventHandler, arg ...interface{}) []reflect.Value {
+	bus.SetDefaultArgumentProcessor(func(callback *EventHandler, arg ...interface{}) []reflect.Value {
 		result := make([]reflect.Value, 0)
 		sum := 0
 		for _, v := range arg {
