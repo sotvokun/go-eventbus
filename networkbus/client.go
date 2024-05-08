@@ -18,7 +18,7 @@ const (
 
 // ClientArg - object containing event for client to publish locally
 type ClientArg struct {
-	Args  []interface{}
+	Args  []any
 	Topic string
 }
 
@@ -45,7 +45,7 @@ func (client *Client) EventBus() eventbus.Bus {
 	return client.eventBus
 }
 
-func (client *Client) doSubscribe(topic string, fn interface{}, serverAddr, serverPath string, subscribeType SubscribeType) error {
+func (client *Client) doSubscribe(topic string, fn any, serverAddr, serverPath string, subscribeType SubscribeType) error {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Server not found -", r)
@@ -71,12 +71,12 @@ func (client *Client) doSubscribe(topic string, fn interface{}, serverAddr, serv
 }
 
 // Subscribe subscribes to a topic in a remote event bus
-func (client *Client) Subscribe(topic string, fn interface{}, serverAddr, serverPath string) {
+func (client *Client) Subscribe(topic string, fn any, serverAddr, serverPath string) {
 	client.doSubscribe(topic, fn, serverAddr, serverPath, Subscribe)
 }
 
 // SubscribeOnce subscribes once to a topic in a remote event bus
-func (client *Client) SubscribeOnce(topic string, fn interface{}, serverAddr, serverPath string) {
+func (client *Client) SubscribeOnce(topic string, fn any, serverAddr, serverPath string) {
 	client.doSubscribe(topic, fn, serverAddr, serverPath, SubscribeOnce)
 }
 

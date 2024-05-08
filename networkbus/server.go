@@ -60,9 +60,9 @@ func (server *Server) EventBus() eventbus.Bus {
 	return server.eventBus
 }
 
-func (server *Server) rpcCallback(subscribeArg *SubscribeArg) func(args ...interface{}) {
+func (server *Server) rpcCallback(subscribeArg *SubscribeArg) func(args ...any) {
 	// TODO: Do not know how to handle this error, because it is inside a callback
-	return func(args ...interface{}) {
+	return func(args ...any) {
 		client, connErr := rpc.DialHTTPPath("tcp", subscribeArg.ClientAddr, subscribeArg.ClientPath)
 		if connErr != nil {
 			fmt.Errorf("dialing: %v", connErr)

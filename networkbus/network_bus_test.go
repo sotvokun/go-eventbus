@@ -46,7 +46,7 @@ func TestRegister(t *testing.T) {
 func TestPushEvent(t *testing.T) {
 	clientBus := NewClient("localhost:2015", "/_client_bus_", eventbus.New())
 
-	eventArgs := make([]interface{}, 1)
+	eventArgs := make([]any, 1)
 	eventArgs[0] = 10
 
 	clientArg := &ClientArg{eventArgs, "topic"}
