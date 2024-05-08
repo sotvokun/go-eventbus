@@ -47,7 +47,7 @@ type EventBus struct {
 }
 
 type EventHandler struct {
-	callBack      reflect.Value
+	Callback      reflect.Value
 	once          *sync.Once
 	async         bool
 	transactional bool
@@ -165,7 +165,7 @@ func (bus *EventBus) doPublish(handler *EventHandler, topic string, args ...inte
 	}
 	passedArguments := argProc(handler, args...)
 	if handler.once == nil {
-		handler.callBack.Call(passedArguments)
+		handler.Callback.Call(passedArguments)
 	} else {
 		handler.once.Do(func() {
 			bus.lock.Lock()
@@ -177,7 +177,7 @@ func (bus *EventBus) doPublish(handler *EventHandler, topic string, args ...inte
 				}
 			}
 			bus.lock.Unlock()
-			handler.callBack.Call(passedArguments)
+			handler.Callback.Call(passedArguments)
 		})
 	}
 }
@@ -208,8 +208,8 @@ func (bus *EventBus) removeHandler(topic string, idx int) {
 func (bus *EventBus) findHandlerIdx(topic string, callback reflect.Value) int {
 	if _, ok := bus.handlers[topic]; ok {
 		for idx, handler := range bus.handlers[topic] {
-			if handler.callBack.Type() == callback.Type() &&
-				handler.callBack.Pointer() == callback.Pointer() {
+			if handler.Callback.Type() == callback.Type() &&
+				handler.Callback.Pointer() == callback.Pointer() {
 				return idx
 			}
 		}
@@ -217,8 +217,8 @@ func (bus *EventBus) findHandlerIdx(topic string, callback reflect.Value) int {
 	return -1
 }
 
-func (bus *EventBus) setupArguments(callback *EventHandler, args ...interface{}) []reflect.Value {
-	funcType := callback.callBack.Type()
+func (bus *EventBus) setupArguments(handler *EventHandler, args ...interface{}) []reflect.Value {
+	funcType := handler.Callback.Type()
 	passedArguments := make([]reflect.Value, len(args))
 	for i, v := range args {
 		if v == nil {
